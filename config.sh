@@ -35,7 +35,7 @@
 # the device in which Arch is going to be installed
 DEVICE="/dev/sda"
 # size of the root partition (/); follow `parted` notation like MiB, GiB etc.
-ROOT_SIZE="40GiB"
+ROOT_SIZE="50GiB"
 # size of the home partition (/home) or else all the remaining space after root
 # parition (in the latter case leave it to 100%)
 HOME_SIZE="100%"
@@ -45,7 +45,7 @@ HOME_SIZE="100%"
 # --------------------------
 
 # interface name on which networking has to run
-INTERFACE="wlp3s0"
+INTERFACE="wlp5s0"
 # hostname of the system
 HOSTNAME="x89"
 # locale of the system

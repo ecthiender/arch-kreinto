@@ -30,6 +30,8 @@
 chmod u+x ./config.sh
 . config.sh
 
+set -e
+
 
 # this will erase all of the data on the hard disk,
 # this is a helper function and not really used in the installation
@@ -51,8 +53,7 @@ is_uefi() {
 }
 
 verify_connectivity() {
-  echo "Checking connectivity..."
-  ping -c 1 8.8.8.8
+  ping -c 1 8.8.8.8 &> /dev/null
   echo $?
 }
 
@@ -64,14 +65,15 @@ update_system_clock() {
 # create partition and make filesystem
 create_partition_n_mkfs() {
   echo "Partitioning the drives..."
-  parted $DEVICE -s mklabel msdos &&\
-  parted $DEVICE -s mkpart primary ext4 1MiB 100MiB &&\ # --> /boot
-  parted $DEVICE -s set 1 boot on &&\
-  parted $DEVICE -s mkpart primary ext4 100MiB $ROOT_SIZE &&\ # --> /
-  parted $DEVICE -s mkpart primary ext4 $ROOT_SIZE $HOME_SIZE &&\ # --> /home
+  parted $DEVICE -s mklabel msdos && \
+  # TODO: why is /boot fat32?
+  parted $DEVICE -s mkpart primary fat32 1MiB 100MiB && \ # --> /boot
+  parted $DEVICE -s set 1 boot on && \
+  parted $DEVICE -s mkpart primary ext4 100MiB $ROOT_SIZE && \ # --> /
+  parted $DEVICE -s mkpart primary ext4 $ROOT_SIZE $HOME_SIZE && \ # --> /home
   echo "Formatting the partitions...."
-  mkfs.ext4 $DEVICE"1" &&\ # --> /boot
-  mkfs.ext4 $DEVICE"2" &&\ # --> /
+  mkfs.fat -F32 $DEVICE"1" && \ # --> /boot
+  mkfs.ext4 $DEVICE"2" && \ # --> /
   mkfs.ext4 $DEVICE"3" # --> /home
 }
 
@@ -86,7 +88,8 @@ mount_fs() {
 
 install_base_system() {
   echo "Installing the base system!..."
-  pacstrap /mnt base base-devel
+  pacman-key --refresh-keys
+  pacstrap /mnt base base-devel linux linux-firmware
 }
 
 change_locale() {
@@ -150,15 +153,18 @@ configure_users() {
 }
 
 reboot_system() {
+  sync
+  sleep 1
+  echo "Synced.."
   echo "Unmounting /mnt..."
   umount -R /mnt
-  sync && echo "Synced.."
-  sleep 2
-  echo "Rebooting system now..."
   sleep 1
-  reboot
+  echo ""
+  echo "-------------------"
+  echo "Arch Linux system installed successfully."
+  echo "Please review the installation and then reboot by running: 'reboot'"
+  echo "-------------------"
 }
-
 
 # the main installation function
 install() {
@@ -173,8 +179,9 @@ install() {
   else
     # Check if internet connection is available. It is required to install our
     # system.
+    echo "Checking connectivity..."
     conn=$(verify_connectivity)
-    if [[ $conn -ne 0 ]]; then
+    if [[ "$conn" -ne 0 ]]; then
       echo "No internet connection detected! :("
       echo "This Arch Linux installation requires internet to continue."
       echo "Aborting..."
@@ -212,7 +219,7 @@ usage() {
 arg="$1"
 
 if [[ $arg == "main" ]];then
-  main
+  install
 elif [[ $arg == "chroot" ]]; then
   install_chroot_sys
 elif [[ $arg == "obliterate" ]]; then
