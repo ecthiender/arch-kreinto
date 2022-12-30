@@ -45,7 +45,7 @@ create_partition_n_mkfs() {
   echo "Partitioning the drives..."
   parted $DEVICE -s mklabel msdos && \
   # TODO: why is /boot fat32?
-  parted $DEVICE -s mkpart primary fat32 1MiB 100MiB && \ # --> /boot
+  parted $DEVICE -s mkpart primary fat32 1MiB $BOOT_SIZE && \ # --> /boot
   parted $DEVICE -s set 1 boot on && \
   parted $DEVICE -s mkpart primary ext4 100MiB $ROOT_SIZE && \ # --> /
   parted $DEVICE -s mkpart primary ext4 $ROOT_SIZE $HOME_SIZE && \ # --> /home

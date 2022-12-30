@@ -17,8 +17,10 @@
 
 # the device in which Arch is going to be installed
 DEVICE="/dev/sda"
+# size of the boot partition (/boot); follow `parted` notation like MiB, GiB etc.
+BOOT_SIZE="500MiB"
 # size of the root partition (/); follow `parted` notation like MiB, GiB etc.
-ROOT_SIZE="50GiB"
+ROOT_SIZE="100GiB"
 # size of the home partition (/home) or else all the remaining space after root
 # parition (in the latter case leave it to 100%)
 HOME_SIZE="100%"
