@@ -1,37 +1,15 @@
 #!/bin/bash
+set -euo -pipefail
 
+### Arch Kreinto ###
 
-#
-#                    -` 				     ___           _       _   __         _       _
-#                   .o+`            / _ \         | |     | | / /        (_)     | |
-#                  `ooo/           / /_\ \_ __ ___| |__   | |/ / _ __ ___ _ _ __ | |_ ___
-#                 `+oooo:          |  _  | '__/ __| '_ \  |    \| '__/ _ \ | '_ \| __/ _ \
-#                `+oooooo:         | | | | | | (__| | | | | |\  \ | |  __/ | | | | || (_) |
-#                -+oooooo+:        \_| |_/_|  \___|_| |_| \_| \_/_|  \___|_|_| |_|\__\___/
-#              `/:-:++oooo+:
-#             `/++++/+++++++:
-#            `/++++++++++++++:						(c) Copyright 2017 ecthiender (Anon Ray)
-#           `/+++ooooooooooooo/`					BSD Licensed
-#          ./ooosssso++osssssso+`
-#         .oossssso-````/ossssss+`				This script installs a base Arch Linux system.
-#        -osssssso.      :ssssssso.				It assumes this script is run from a USB and
-#       :osssssss/        osssso+++.			installs the base Arch system on the primary
-#      /ossssssss/        +ssssooo/-			storage disk of the computer.
-#    `/ossssso+/:-        -:/+osssso+-
-#   `+sso+:-`                 `.-/+oso:
-#  `++:.                           `-/+/
-#  .`                                 `/
-#
-
-
-
+# This script installs a base Arch Linux system. It assumes this script is run
+# from a USB and installs the base Arch system on the primary storage disk of
+# the computer.
 
 # Source the configuration file
 chmod u+x ./config.sh
 . config.sh
-
-set -e
-
 
 # this will erase all of the data on the hard disk,
 # this is a helper function and not really used in the installation

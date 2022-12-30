@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Script to install a gnome in Arch Linux
 
 # install the alsa packages
@@ -27,4 +28,7 @@ fi
 # enable gdm
 systemctl enable gdm.service
 # restart
+
+echo "Gnome installation successful! Restarting system..."
+sleep 3
 reboot
