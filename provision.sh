@@ -9,14 +9,14 @@ set -euo -pipefail
 
 # Source the configuration file
 chmod u+x ./config.sh
-. config.sh
+source config.sh
 
 # this will erase all of the data on the hard disk,
 # this is a helper function and not really used in the installation
 erase_entire_disk() {
   echo "OBLITERATING THE WORLD!!!!!!"
   echo "Erasing entire disk??!!!"
-  sgdisk --zap-all $DEVICE
+  sgdisk --zap-all "$AK_DEVICE"
 }
 
 is_uefi() {
@@ -43,25 +43,25 @@ update_system_clock() {
 # create partition and make filesystem
 create_partition_n_mkfs() {
   echo "Partitioning the drives..."
-  parted $DEVICE -s mklabel msdos && \
+  parted "$AK_DEVICE" -s mklabel msdos
   # TODO: why is /boot fat32?
-  parted $DEVICE -s mkpart primary fat32 1MiB $BOOT_SIZE && \ # --> /boot
-  parted $DEVICE -s set 1 boot on && \
-  parted $DEVICE -s mkpart primary ext4 100MiB $ROOT_SIZE && \ # --> /
-  parted $DEVICE -s mkpart primary ext4 $ROOT_SIZE $HOME_SIZE && \ # --> /home
+  parted "$AK_DEVICE" -s mkpart primary fat32 1MiB "$AK_BOOT_SIZE" # -> /boot
+  parted "$AK_DEVICE" -s set 1 boot on
+  parted "$AK_DEVICE" -s mkpart primary ext4 100MiB "$AK_ROOT_SIZE" # -> /
+  parted "$AK_DEVICE" -s mkpart primary ext4 "$AK_ROOT_SIZE" "$AK_HOME_SIZE" # -> /home
   echo "Formatting the partitions...."
-  mkfs.fat -F32 $DEVICE"1" && \ # --> /boot
-  mkfs.ext4 $DEVICE"2" && \ # --> /
-  mkfs.ext4 $DEVICE"3" # --> /home
+  mkfs.fat -F32 "$AK_DEVICE""1" # -> /boot
+  mkfs.ext4 "$AK_DEVICE""2" # -> /
+  mkfs.ext4 "$AK_DEVICE""3" # -> /home
 }
 
 mount_fs() {
   echo "Mounting the newly created partitions..."
-  mount $DEVICE"2" /mnt &&\
+  mount "$AK_DEVICE""2" /mnt &&\
   mkdir -p /mnt/boot &&\
-  mount $DEVICE"1" /mnt/boot &&\
+  mount "$AK_DEVICE""1" /mnt/boot &&\
   mkdir -p /mnt/home &&\
-  mount $DEVICE"3" /mnt/home
+  mount "$AK_DEVICE""3" /mnt/home
 }
 
 install_base_system() {
@@ -72,14 +72,14 @@ install_base_system() {
 
 change_locale() {
   echo "Configuring locale..."
-  sed -i "s/#$LOCALE UTF-8/$LOCALE UTF-8/" /etc/locale.gen
+  sed -i "s/#$AK_LOCALE UTF-8/$AK_LOCALE UTF-8/" /etc/locale.gen
   locale-gen
-  echo "LANG=$LOCALE" > /etc/locale.conf
+  echo "LANG=$AK_LOCALE" > /etc/locale.conf
 }
 
 configure_tz() {
   echo "Configuring timezone.."
-  ln -s /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+  ln -s /usr/share/zoneinfo/"$AK_TIMEZONE" /etc/localtime
   hwclock --systohc --utc
 }
 
@@ -91,14 +91,14 @@ initramfs() {
 install_grub() {
   echo "Installing and configuring grub..."
   pacman -S grub os-prober
-  grub-install --recheck $DEVICE
+  grub-install --recheck "$AK_DEVICE"
   grub-mkconfig -o /boot/grub/grub.cfg
 }
 
 config_netw() {
   echo "Configuring networking..."
-  echo $HOSTNAME > /etc/hostname
-  systemctl enable "dhcpcd@$INTERFACE.service"
+  echo "$AK_HOSTNAME" > /etc/hostname
+  systemctl enable "dhcpcd@$AK_INTERFACE.service"
   pacman -S iw wpa_supplicant dialog
 }
 
@@ -115,17 +115,17 @@ install_chroot_sys() {
 configure_system() {
   echo "Configuring the system post install..."
   genfstab -U /mnt > /mnt/etc/fstab
-  this_file=$(basename $0)
+  this_file=$(basename "$0")
   cmd="cd /mnt && bash ${this_file} chroot"
-  cp ${this_file} /mnt/
+  cp "${this_file}" /mnt/
   echo "Entering into chroot of base system to generate initramfs and grub..."
   echo "Cmd is: $cmd"
-  arch-chroot /mnt /bin/bash -c '${cmd}'
+  arch-chroot /mnt /bin/bash -c "${cmd}"
 }
 
 configure_users() {
-  echo "Adding user $USER.."
-  useradd -G wheel -m $USER
+  echo "Adding user $AK_USER.."
+  useradd -G wheel -m "$AK_USER"
   pacman -S sudo \
     && sed -i 's/#%wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
 }
